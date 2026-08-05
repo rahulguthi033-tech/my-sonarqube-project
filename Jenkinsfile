@@ -16,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'Obtained Jenkinsfile from git https://github.com/rahulguthi033-tech/my-sonarqube-project.git'
+                    url: 'https://github.com/rahulguthi033-tech/my-sonarqube-project.git'
             }
         }
 
@@ -36,10 +36,10 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar-server') {
                     sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=SonarQube-Jenkins-Pipeline \
-                        -Dsonar.projectName=SonarQube-Jenkins-Pipeline \
-                        -Dsonar.java.binaries=target/classes
+                    ${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=my-sonarqube-project \
+                    -Dsonar.projectName=my-sonarqube-project \
+                    -Dsonar.java.binaries=target/classes
                     """
                 }
             }
@@ -47,7 +47,7 @@ pipeline {
 
         stage('Package') {
             steps {
-                sh 'mvn package'
+                sh 'mvn clean package'
             }
         }
 
@@ -64,10 +64,9 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-
                     sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push $DOCKER_IMAGE
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push $DOCKER_IMAGE
                     '''
                 }
             }
@@ -76,29 +75,29 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 sh '''
-                    docker stop sonarqube-jenkins-pipeline || true
-                    docker rm sonarqube-jenkins-pipeline || true
+                docker stop sonarqube-jenkins-pipeline || true
+                docker rm sonarqube-jenkins-pipeline || true
 
-                    docker run -d \
-                      --name sonarqube-jenkins-pipeline \
-                      -p 5555:5555 \
-                      $DOCKER_IMAGE
+                docker run -d \
+                  --name sonarqube-jenkins-pipeline \
+                  -p 5555:5555 \
+                  $DOCKER_IMAGE
                 '''
             }
         }
     }
 
     post {
-        always {
-            cleanWs()
-        }
-
         success {
             echo 'Pipeline executed successfully.'
         }
 
         failure {
             echo 'Pipeline execution failed.'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
