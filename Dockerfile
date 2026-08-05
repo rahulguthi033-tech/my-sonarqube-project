@@ -2,8 +2,8 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY target/my-sonarqube-project-1.0.0.jar app.jar
+COPY target/spotify-app-1.0.0.jar app.jar
 
-EXPOSE 8081
+EXPOSE 5555
 
 ENTRYPOINT ["java","-jar","app.jar"]
